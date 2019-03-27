@@ -95,7 +95,9 @@ end
 %vars = {'Age','Systolic'};
 %https://nl.mathworks.com/help/matlab/ref/uitable.html?searchHighlight=uitable&s_tid=doc_srchtitle
 set(handles.uitable1, 'data', num);
-plot([1 2 3],[2 4 6]);
+
+axes(handles.aces1);
+plot(num);
 
 
 % --- Executes on button press in btnSave.
