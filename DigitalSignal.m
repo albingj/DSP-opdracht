@@ -96,6 +96,8 @@ end
 %https://nl.mathworks.com/help/matlab/ref/uitable.html?searchHighlight=uitable&s_tid=doc_srchtitle
 set(handles.uitable1, 'data', num);
 
+
+
 axes(handles.axes1);
 plot(num(:,1),num(:,2));
 axes(handles.axes2);
