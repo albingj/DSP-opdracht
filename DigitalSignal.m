@@ -175,7 +175,6 @@ P1(2:end-1) = 2*P1(2:end-1);
 f = Fs*(0:(L/2))/L;
 
 
-
 % --- Executes on button press in btnSave.
 function btnSave_Callback(hObject, eventdata, handles)
 % hObject    handle to btnSave (see GCBO)
