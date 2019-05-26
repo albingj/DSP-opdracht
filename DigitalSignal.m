@@ -1,8 +1,3 @@
-
-
-
-
-
 function varargout = DigitalSignal(varargin)
 % DIGITALSIGNAL MATLAB code for DigitalSignal.fig
 %      DIGITALSIGNAL, by itself, creates a new DIGITALSIGNAL or raises the existing
@@ -27,7 +22,7 @@ function varargout = DigitalSignal(varargin)
 
 % Edit the above text to modify the response to help DigitalSignal
 
-% Last Modified by GUIDE v2.5 22-May-2019 17:35:32
+% Last Modified by GUIDE v2.5 26-May-2019 01:55:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,42 +41,57 @@ if nargout
 else
     gui_mainfcn(gui_State, varargin{:});
 end
-
-
-
 % End initialization code - DO NOT EDIT
 
-
+% assign the new value Data to the variable 'data' in Matlab WorkSpace
 function setData(Data)
 global data;
 data = Data;
 assignin('base', 'data', data);
 
-
+% return the value stored in global variable 'data'
 function Data = getData
 global data;
 Data = data;
 
+% assign the new value Data to the variable 'selected' in Matlab WorkSpace
 function setSelectedData(Data)
 global selectedData;
 selectedData = Data;
 assignin('base', 'selected',selectedData);
 
-
+% return the value stored in global variable 'selected'
 function Data = getSelectedData
 global selectedData;
 Data = selectedData;
 
-
+% set the title for this GUI and store the value in global variable
+% 'titles' in Matlab WorkSpace
 function setTitles(Titles)
 global titles;
 titles = Titles;
 assignin('base', 'titles', Titles);
 
-
+% return the name of the title of this GUI
 function Titles = getTitles
 global titles;
 Titles = titles;
+
+function [f,P1] = FourierBerekening(input) 
+Fs = 1000;            % Sampling frequency                    
+T = 1/Fs;             % Sampling period       
+L = 473;             % Length of signal (at least this value)
+t = (0:L-1)*T;        % Time vector
+S = cell2mat(input);
+n = 2^nextpow2(L);
+pad = zeros( n-L,1);
+S = [S;pad];
+X = S.';
+Y = fft(X,n);
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+f = Fs*(0:(L/2))/L;
 
 % --- Executes just before DigitalSignal is made visible.
 function DigitalSignal_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -101,7 +111,7 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 set(handles.uipanel2,'visible','off')
 set(handles.uipanel1,'visible','on')
-set(handles.pushbutton4,'visible','off')
+set(handles.btnTimeDomain,'visible','off')
 
 
 % --- Outputs from this function are returned to the command line.
@@ -119,6 +129,8 @@ varargout{1} = handles.output;
 
 
 % --- Executes on button press in btnSelectData.
+% Opens the selected Excel file and run it through the function
+% 'FileSelected'
 function btnSelectData_Callback(hObject, eventdata, handles)
  [file, path, index] = uigetfile({'*.xlsx';});
     
@@ -128,53 +140,28 @@ function btnSelectData_Callback(hObject, eventdata, handles)
         %disp('User selected file \r\n');
         FileSelected(fullfile(path, file), hObject, eventdata, handles);
     end
-    
+
+% Gets the data from the specified Excel file
 function FileSelected(fullpath, hObject, eventdata, handles)
-    %disp(fullpath);
-    
-   [num, txt, raw] = xlsread(fullpath);
-   % data = xlsread(fullpath, -1);
-    
-  
-   
-   beginKolom = 3;
-   aantalKollomen = 6;
-   rij = 13;
-  titel = txt(rij, (beginKolom + (aantalKollomen * 0)));
-  data = raw(rij+3:end-1, beginKolom:end);
-  setData(data);
-   %titel = txt(3, 15);
-   %disp(raw(13,3));
-   
-   A = txt(13, :);
-   A = A(~cellfun(@isempty, A));
-   Q = split(A,":");
-   A = Q(:,:,2) ;
-   setTitles(A(1:22));
-   
-   guidata(hObject, handles);
-   
-   handles.listbox2.String = string(getTitles) ;
-    handles.popupmenu1.String = string(getTitles); 
- 
-    
-function [f,P1] = FourierBerekening(input) 
-   Fs = 1000;            % Sampling frequency                    
-T = 1/Fs;             % Sampling period       
-L = 473;             % Length of signal
-t = (0:L-1)*T;        % Time vector
-S = cell2mat(input);
-n = 2^nextpow2(L);
-pad = zeros( n-L,1);
-S = [S;pad];
-X = S.';
-Y = fft(X,n);
-P2 = abs(Y/L);
-P1 = P2(1:L/2+1);
-P1(2:end-1) = 2*P1(2:end-1);
-f = Fs*(0:(L/2))/L;
+       
 
+[num, txt, raw] = xlsread(fullpath);
 
+beginKolom = 3;
+rij = 13;
+data = raw(rij+3:end-1, beginKolom:end);
+setData(data);
+   
+A = txt(13, :);
+A = A(~cellfun(@isempty, A));
+Q = split(A,":");
+A = Q(:,:,2) ;
+setTitles(A(1:22));
+   
+guidata(hObject, handles);
+   
+handles.listbox2.String = string(getTitles) ;
+handles.popupmenu1.String = string(getTitles); 
 
 % --- Executes on button press in btnSave.
 function btnSave_Callback(hObject, eventdata, handles)
@@ -260,9 +247,7 @@ function listbox2_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox2 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox2
-listBoxItems = handles.listbox2.String;
 listBoxSelectedIndexes = handles.listbox2.Value;
-selectedString = listBoxItems{listBoxSelectedIndexes};
 pos = ((listBoxSelectedIndexes-1)*6)+1;
 pos2 = pos+5;
 data = getData;
@@ -270,17 +255,7 @@ a = data(:,pos:pos2);
 b = data(:,(pos+22):(pos2 +22));
 c = data(:,(pos+44):(pos2 +44));
 C = [a b c];
-setSelectedData(C)
-axes(handles.axes1);
-t = cell2mat(C(:,1));
-plot(t)
-%hold on
-%plot(cell2mat(C(:,7)))
-%plot(cell2mat(C(:,13)))
-%hold off
-%plot(C);
- 
-Callback(hObject, eventdata, handles);
+setSelectedData(C);
 
 % --- Executes during object creation, after setting all properties.
 function listbox2_CreateFcn(hObject, eventdata, handles)
@@ -318,60 +293,22 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function Callback(hObject, eventdata, handles)
-
-data = getSelectedData
-
-
-[x0,P] = FourierBerekening(data(:,1));
-[y0,P1] = FourierBerekening(data(:,7));
-[z0,P2] = FourierBerekening(data(:,13));
-
-[x1,P3] = FourierBerekening(data(:,2)) ;
-[y1,P4] = FourierBerekening(data(:,8)) ;
-[z1,P5] = FourierBerekening(data(:,14));
-
-[x2,P6] = FourierBerekening(data(:,3)) ;
-[y2,P7] = FourierBerekening(data(:,9)) ;
-[z2,P8] = FourierBerekening(data(:,15));
-
-[x3,P9] = FourierBerekening(data(:,4)) ;
-[y3,P10] = FourierBerekening(data(:,10)); 
-[z3,P11] = FourierBerekening(data(:,16)) ;
-
-[x4,P12] = FourierBerekening(data(:,5)) ;
-[y4,P13] = FourierBerekening(data(:,11)) ;
-[z4,P14] = FourierBerekening(data(:,17)) ;
-
-[x5,P15] = FourierBerekening(data(:,6)) ;
-[y5,P16] = FourierBerekening(data(:,12)) ;
-[z5,P17] = FourierBerekening(data(:,18)) ;
-
-
-
-
 %%View van paneel aanpassen-------------------
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)
+% --- Executes on button press in btnTimeDomain.
+function btnTimeDomain_Callback(hObject, eventdata, handles)
 set(handles.uipanel2,'visible','off')
 set(handles.uipanel1,'visible','on')
-set(handles.pushbutton4,'visible','off')
-set(handles.btnGesplitst,'visible','on')
+set(handles.btnTimeDomain,'visible','off')
+set(handles.btnFourier,'visible','on')
 
-% --- Executes on button press in btnGesplitst.
-function btnGesplitst_Callback(hObject, eventdata, handles)
+% --- Executes on button press in btnFourier.
+function btnFourier_Callback(hObject, eventdata, handles)
 
 set(handles.uipanel2,'visible','on')
 set(handles.uipanel1,'visible','off')
-set(handles.pushbutton4,'visible','on')
-set(handles.btnGesplitst,'visible','off')
-% --- Executes on button press in btnGesplitst.
-
-
-function radiobutton1_Callback(hObject, eventdata, handles)
-
-
-
+set(handles.btnTimeDomain,'visible','on')
+set(handles.btnFourier,'visible','off')
+% --- Executes on button press in btnFourier.
 
 
 % --- Executes when selected object is changed in uibuttongroup2.
@@ -388,32 +325,62 @@ switch(get(eventdata.NewValue,'Tag'))
         [y0,P1] = FourierBerekening(data(:,7));
         [z0,P2] = FourierBerekening(data(:,13));
     case 'radiobutton2'
-         [x0,P] = FourierBerekening(data(:,2));
+        [x0,P] = FourierBerekening(data(:,2));
         [y0,P1] = FourierBerekening(data(:,8));
         [z0,P2] = FourierBerekening(data(:,14));
         
     case 'radiobutton3'
-          [x0,P] = FourierBerekening(data(:,3));
+        [x0,P] = FourierBerekening(data(:,3));
         [y0,P1] = FourierBerekening(data(:,9));
         [z0,P2] = FourierBerekening(data(:,15));
     case 'radiobutton4'
-         [x0,P] = FourierBerekening(data(:,4));
+        [x0,P] = FourierBerekening(data(:,4));
         [y0,P1] = FourierBerekening(data(:,10));
         [z0,P2] = FourierBerekening(data(:,16));
         case 'radiobutton5'
-         [x0,P] = FourierBerekening(data(:,5));
+        [x0,P] = FourierBerekening(data(:,5));
         [y0,P1] = FourierBerekening(data(:,11));
         [z0,P2] = FourierBerekening(data(:,17));
         case 'radiobutton6'
-         [x0,P] = FourierBerekening(data(:,6));
+        [x0,P] = FourierBerekening(data(:,6));
         [y0,P1] = FourierBerekening(data(:,12));
         [z0,P2] = FourierBerekening(data(:,18));
 end
 
-axes(handles.axes2); plot(x0,P);
+        axes(handles.axes2); plot(x0,P);
         axes(handles.axes3); plot(y0,P1)
         axes(handles.axes4); plot(z0,P2)
 
 
-
-
+% --- Executes when selected object is changed in uibuttongroup1.
+function uibuttongroup1_SelectionChanOgedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uibuttongroup1 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getSelectedData;
+switch(get(eventdata.NewValue,'Tag'))
+    case 'radiobutton7'
+        axes(handles.axes10); plot(cell2mat(data(:,1)));
+        axes(handles.axes11); plot(cell2mat(data(:,7)));
+        axes(handles.axes12); plot(cell2mat(data(:,13)));
+    case 'radiobutton8'
+        axes(handles.axes10); plot(cell2mat(data(:,2)));
+        axes(handles.axes11); plot(cell2mat(data(:,8)));
+        axes(handles.axes12); plot(cell2mat(data(:,14)));
+    case 'radiobutton9'
+        axes(handles.axes10); plot(cell2mat(data(:,3)));
+        axes(handles.axes11); plot(cell2mat(data(:,9)));
+        axes(handles.axes12); plot(cell2mat(data(:,15)));
+    case 'radiobutton10'
+        axes(handles.axes10); plot(cell2mat(data(:,4)));
+        axes(handles.axes11); plot(cell2mat(data(:,10)));
+        axes(handles.axes12); plot(cell2mat(data(:,16)));
+    case 'radiobutton11'
+        axes(handles.axes10); plot(cell2mat(data(:,5)));
+        axes(handles.axes11); plot(cell2mat(data(:,11)));
+        axes(handles.axes12); plot(cell2mat(data(:,17)));
+    case 'radiobutton12'
+        axes(handles.axes10); plot(cell2mat(data(:,6)));
+        axes(handles.axes11); plot(cell2mat(data(:,12)));
+        axes(handles.axes12); plot(cell2mat(data(:,18)));
+end
