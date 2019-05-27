@@ -22,7 +22,7 @@ function varargout = DigitalSignal(varargin)
 
 % Edit the above text to modify the response to help DigitalSignal
 
-% Last Modified by GUIDE v2.5 26-May-2019 01:55:57
+% Last Modified by GUIDE v2.5 27-May-2019 02:00:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,16 +77,27 @@ function Titles = getTitles
 global titles;
 Titles = titles;
 
+function setSelectedWindow(Window)
+global selectedWindow;
+selectedWindow = Window;
+assignin('base', 'window', selectedWindow);
+
+function Window = getSelectedWindow
+global selectedWindow;
+Window = selectedWindow;
+
 function [f,P1] = FourierBerekening(input) 
 Fs = 1000;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period       
 L = 473;             % Length of signal (at least this value)
 t = (0:L-1)*T;        % Time vector
+window = getSelectedWindow; % window function
 S = cell2mat(input);
 n = 2^nextpow2(L);
 pad = zeros( n-L,1);
 S = [S;pad];
 X = S.';
+X = X .* window;
 Y = fft(X,n);
 P2 = abs(Y/L);
 P1 = P2(1:L/2+1);
@@ -140,11 +151,13 @@ function btnSelectData_Callback(hObject, eventdata, handles)
         %disp('User selected file \r\n');
         FileSelected(fullfile(path, file), hObject, eventdata, handles);
     end
+    data = getSelectedData;
+    axes(handles.axes10); plot(cell2mat(data(:,1)),'s');
+    axes(handles.axes11); plot(cell2mat(data(:,7)),'s');
+    axes(handles.axes12); plot(cell2mat(data(:,13)),'s');
 
 % Gets the data from the specified Excel file
 function FileSelected(fullpath, hObject, eventdata, handles)
-       
-
 [num, txt, raw] = xlsread(fullpath);
 
 beginKolom = 3;
@@ -161,7 +174,9 @@ setTitles(A(1:22));
 guidata(hObject, handles);
    
 handles.listbox2.String = string(getTitles) ;
-handles.popupmenu1.String = string(getTitles); 
+handles.popupmenu1.String = string(getTitles);
+setSelectedWindow(int16.empty(3,0));
+
 
 % --- Executes on button press in btnSave.
 function btnSave_Callback(hObject, eventdata, handles)
@@ -319,68 +334,107 @@ function uibuttongroup2_SelectionChangedFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 data = getSelectedData;
-switch(get(eventdata.NewValue,'Tag'))
-    case 'radiobutton1'
-        [x0,P] = FourierBerekening(data(:,1));
-        [y0,P1] = FourierBerekening(data(:,7));
-        [z0,P2] = FourierBerekening(data(:,13));
-    case 'radiobutton2'
-        [x0,P] = FourierBerekening(data(:,2));
-        [y0,P1] = FourierBerekening(data(:,8));
-        [z0,P2] = FourierBerekening(data(:,14));
-        
-    case 'radiobutton3'
-        [x0,P] = FourierBerekening(data(:,3));
-        [y0,P1] = FourierBerekening(data(:,9));
-        [z0,P2] = FourierBerekening(data(:,15));
-    case 'radiobutton4'
-        [x0,P] = FourierBerekening(data(:,4));
-        [y0,P1] = FourierBerekening(data(:,10));
-        [z0,P2] = FourierBerekening(data(:,16));
-        case 'radiobutton5'
-        [x0,P] = FourierBerekening(data(:,5));
-        [y0,P1] = FourierBerekening(data(:,11));
-        [z0,P2] = FourierBerekening(data(:,17));
-        case 'radiobutton6'
-        [x0,P] = FourierBerekening(data(:,6));
-        [y0,P1] = FourierBerekening(data(:,12));
-        [z0,P2] = FourierBerekening(data(:,18));
-end
+analysisWindow = getSelectedWindow;
 
-        axes(handles.axes2); plot(x0,P);
-        axes(handles.axes3); plot(y0,P1)
-        axes(handles.axes4); plot(z0,P2)
+if ~isempty(analysisWindow)
+    switch(get(eventdata.NewValue,'Tag'))
+        case 'radiobutton1'
+            [x0,P] = FourierBerekening(data(:,1));
+            [y0,P1] = FourierBerekening(data(:,7));
+            [z0,P2] = FourierBerekening(data(:,13));
+        case 'radiobutton2'
+            [x0,P] = FourierBerekening(data(:,2));
+            [y0,P1] = FourierBerekening(data(:,8));
+            [z0,P2] = FourierBerekening(data(:,14));
+        case 'radiobutton3'
+            [x0,P] = FourierBerekening(data(:,3));
+            [y0,P1] = FourierBerekening(data(:,9));
+            [z0,P2] = FourierBerekening(data(:,15));
+        case 'radiobutton4'
+            [x0,P] = FourierBerekening(data(:,4));
+            [y0,P1] = FourierBerekening(data(:,10));
+            [z0,P2] = FourierBerekening(data(:,16));
+        case 'radiobutton5'
+            [x0,P] = FourierBerekening(data(:,5));
+            [y0,P1] = FourierBerekening(data(:,11));
+            [z0,P2] = FourierBerekening(data(:,17));
+        case 'radiobutton6'
+            [x0,P] = FourierBerekening(data(:,6));
+            [y0,P1] = FourierBerekening(data(:,12));
+            [z0,P2] = FourierBerekening(data(:,18));
+    end
+        axes(handles.axes2); plot(x0,P, 's');
+        axes(handles.axes3); plot(y0,P1, 's')
+        axes(handles.axes4); plot(z0,P2, 's')
+else 
+    disp('Selecteer eerst een window-functie');
+end
 
 
 % --- Executes when selected object is changed in uibuttongroup1.
-function uibuttongroup1_SelectionChanOgedFcn(hObject, eventdata, handles)
+function uibuttongroup1_SelectionChangedFcn(hObject, eventdata, handles)
 % hObject    handle to the selected object in uibuttongroup1 
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getSelectedData;
+
 switch(get(eventdata.NewValue,'Tag'))
     case 'radiobutton7'
-        axes(handles.axes10); plot(cell2mat(data(:,1)));
-        axes(handles.axes11); plot(cell2mat(data(:,7)));
-        axes(handles.axes12); plot(cell2mat(data(:,13)));
+        axes(handles.axes10); plot(cell2mat(data(:,1)),'s')
+        axes(handles.axes11); plot(cell2mat(data(:,7)),'s')
+        axes(handles.axes12); plot(cell2mat(data(:,13)),'s')
     case 'radiobutton8'
-        axes(handles.axes10); plot(cell2mat(data(:,2)));
-        axes(handles.axes11); plot(cell2mat(data(:,8)));
-        axes(handles.axes12); plot(cell2mat(data(:,14)));
+        axes(handles.axes10); plot(cell2mat(data(:,2)),'s');
+        axes(handles.axes11); plot(cell2mat(data(:,8)),'s');
+        axes(handles.axes12); plot(cell2mat(data(:,14)),'s');
     case 'radiobutton9'
-        axes(handles.axes10); plot(cell2mat(data(:,3)));
-        axes(handles.axes11); plot(cell2mat(data(:,9)));
-        axes(handles.axes12); plot(cell2mat(data(:,15)));
+        axes(handles.axes10); plot(cell2mat(data(:,3)),'s');
+        axes(handles.axes11); plot(cell2mat(data(:,9)),'s');
+        axes(handles.axes12); plot(cell2mat(data(:,15)),'s');
     case 'radiobutton10'
-        axes(handles.axes10); plot(cell2mat(data(:,4)));
-        axes(handles.axes11); plot(cell2mat(data(:,10)));
-        axes(handles.axes12); plot(cell2mat(data(:,16)));
+        axes(handles.axes10); plot(cell2mat(data(:,4)),'s');
+        axes(handles.axes11); plot(cell2mat(data(:,10)),'s');
+        axes(handles.axes12); plot(cell2mat(data(:,16)),'s');
     case 'radiobutton11'
-        axes(handles.axes10); plot(cell2mat(data(:,5)));
-        axes(handles.axes11); plot(cell2mat(data(:,11)));
-        axes(handles.axes12); plot(cell2mat(data(:,17)));
+        axes(handles.axes10); plot(cell2mat(data(:,5)),'s');
+        axes(handles.axes11); plot(cell2mat(data(:,11)),'s');
+        axes(handles.axes12); plot(cell2mat(data(:,17)),'s');
     case 'radiobutton12'
-        axes(handles.axes10); plot(cell2mat(data(:,6)));
-        axes(handles.axes11); plot(cell2mat(data(:,12)));
-        axes(handles.axes12); plot(cell2mat(data(:,18)));
+        axes(handles.axes10); plot(cell2mat(data(:,6)),'s');
+        axes(handles.axes11); plot(cell2mat(data(:,12)),'s');
+        axes(handles.axes12); plot(cell2mat(data(:,18)),'s');
 end
+
+
+
+% --- Executes on button press in btnHann.
+function btnHann_Callback(hObject, eventdata, handles)
+% hObject    handle to btnHann (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+disp('Wordt de hann funtion opgeroepen?');
+
+
+% --- Executes on button press in btnBlackman.
+function btnBlackman_Callback(hObject, eventdata, handles)
+% hObject    handle to btnBlackman (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+disp('Wordt de blackman funtion opgeroepen?');
+blackmanWindow = blackman(513);
+setSelectedWindow(blackmanWindow(1:512));
+
+
+% --- Executes on button press in btnNuttall.
+function btnNuttall_Callback(hObject, eventdata, handles)
+% hObject    handle to btnNuttall (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in btnFlattop.
+function btnFlattop_Callback(hObject, eventdata, handles)
+% hObject    handle to btnFlattop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
