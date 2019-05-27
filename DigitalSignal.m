@@ -96,8 +96,8 @@ S = cell2mat(input);
 n = 2^nextpow2(L);
 pad = zeros( n-L,1);
 S = [S;pad];
+S = S.* window;
 X = S.';
-X = X .* window;
 Y = fft(X,n);
 P2 = abs(Y/L);
 P1 = P2(1:L/2+1);
@@ -414,6 +414,8 @@ function btnHann_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 disp('Wordt de hann funtion opgeroepen?');
+hannWindow = hann(513);
+setSelectedWindow(hannWindow(1:512));
 
 
 % --- Executes on button press in btnBlackman.
@@ -431,6 +433,9 @@ function btnNuttall_Callback(hObject, eventdata, handles)
 % hObject    handle to btnNuttall (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+disp('Wordt de nuttall funtion opgeroepen?');
+nuttallWindow = nuttallwin(513);
+setSelectedWindow(nuttallWindow(1:512));
 
 
 % --- Executes on button press in btnFlattop.
@@ -438,3 +443,6 @@ function btnFlattop_Callback(hObject, eventdata, handles)
 % hObject    handle to btnFlattop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+disp('Wordt de flattop funtion opgeroepen?');
+flattopWindow = flattopwin(513);
+setSelectedWindow(flattopWindow(1:512));
