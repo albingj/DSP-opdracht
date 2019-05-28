@@ -22,7 +22,7 @@ function varargout = DigitalSignal(varargin)
 
 % Edit the above text to modify the response to help DigitalSignal
 
-% Last Modified by GUIDE v2.5 27-May-2019 02:00:19
+% Last Modified by GUIDE v2.5 28-May-2019 00:32:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -262,6 +262,9 @@ function listbox2_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox2 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox2
+
+% gets selected data from listbox and finds it in data tables to store it
+% in the selected array
 listBoxSelectedIndexes = handles.listbox2.Value;
 pos = ((listBoxSelectedIndexes-1)*6)+1;
 pos2 = pos+5;
@@ -271,6 +274,9 @@ b = data(:,(pos+22):(pos2 +22));
 c = data(:,(pos+44):(pos2 +44));
 C = [a b c];
 setSelectedData(C);
+%update plots
+ uibuttongroup1_SelectionChangedFcn(hObject, eventdata, handles);
+ uibuttongroup2_SelectionChangedFcn(hObject, eventdata, handles);
 
 % --- Executes during object creation, after setting all properties.
 function listbox2_CreateFcn(hObject, eventdata, handles)
