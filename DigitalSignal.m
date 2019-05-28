@@ -259,10 +259,8 @@ function listbox2_Callback(hObject, eventdata, handles)
 % hObject    handle to listbox2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox2 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox2
-
 % gets selected data from listbox and finds it in data tables to store it
 % in the selected array
 listBoxSelectedIndexes = handles.listbox2.Value;
@@ -274,9 +272,6 @@ b = data(:,(pos+22):(pos2 +22));
 c = data(:,(pos+44):(pos2 +44));
 C = [a b c];
 setSelectedData(C);
-%update plots
- uibuttongroup1_SelectionChangedFcn(hObject, eventdata, handles);
- uibuttongroup2_SelectionChangedFcn(hObject, eventdata, handles);
 
 % --- Executes during object creation, after setting all properties.
 function listbox2_CreateFcn(hObject, eventdata, handles)
@@ -383,7 +378,6 @@ function uibuttongroup1_SelectionChangedFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getSelectedData;
-
 switch(get(eventdata.NewValue,'Tag'))
     case 'radiobutton7'
         axes(handles.axes10); plot(cell2mat(data(:,1)),'s')
@@ -418,7 +412,6 @@ function btnHann_Callback(hObject, eventdata, handles)
 % hObject    handle to btnHann (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 disp('Wordt de hann funtion opgeroepen?');
 hannWindow = hann(513);
 setSelectedWindow(hannWindow(1:512));
